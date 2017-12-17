@@ -41,7 +41,11 @@
 #include "drivers/pinout.h"
 #include "usb_bulk_structs.h"
 
+#include "linked_list_dbl.h"
+
+#include "timer_handler.h"
 #include "servo.h"
+#include "dc_motor.h"
 //*****************************************************************************
 //
 //! \addtogroup example_list
@@ -77,7 +81,7 @@
 // Global variable to hold the system clock speed.
 //
 //*****************************************************************************
-    uint32_t ui32SysClock;
+uint32_t ui32SysClock;
 //*****************************************************************************
 //
 // The system tick rate expressed both as ticks per second and a millisecond
@@ -118,6 +122,14 @@ volatile uint32_t g_ui32Flags = 0;
 //
 //*****************************************************************************
 static volatile bool g_bUSBConfigured = false;
+
+//*****************************************************************************
+//
+// Linked list for servo motor movement.
+//
+//*****************************************************************************
+struct list_s left_arm_list[4];		// list contains the different actions
+struct list_s right_arm_list[4];	// list contains the different actions
 
 //*****************************************************************************
 //
@@ -410,11 +422,6 @@ RxHandler(void *pvCBData, uint32_t ui32Event, uint32_t ui32MsgValue,
 								 0 : ui32ReadIndex);
 			}
 
-//			UARTprintf("Servo: %d  Position: %d, Index: %d\r",
-//						servo,
-//						position,
-//						ui32ReadIndex);
-
             PWMPulseWidthSet(PWM0_BASE, servo, position);
 
             //
@@ -535,10 +542,31 @@ main(void)
     ui32RxCount = 0;
     ui32TxCount = 0;
 
+
+    /* Initialise action list */
+    left_arm_list[0].h_p = left_arm_list[0].t_p = NULL;
+    left_arm_list[1].h_p = left_arm_list[1].t_p = NULL;
+    left_arm_list[2].h_p = left_arm_list[2].t_p = NULL;
+    left_arm_list[3].h_p = left_arm_list[3].t_p = NULL;
+    right_arm_list[0].h_p = right_arm_list[0].t_p = NULL;
+    right_arm_list[1].h_p = right_arm_list[1].t_p = NULL;
+    right_arm_list[2].h_p = right_arm_list[2].t_p = NULL;
+    right_arm_list[3].h_p = right_arm_list[3].t_p = NULL;
+
+    //
+    // Initialise millisecond timer
+    //
+    timerInit();
+
     //
     // Initialise Servo Control
     //
     initPWM();
+
+    //
+    // Initialise DC Motor Control
+    //
+    initDCMotor();
 
     //
     // Main application loop.

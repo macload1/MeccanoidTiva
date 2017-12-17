@@ -31,19 +31,6 @@
 //*****************************************************************************
 extern uint32_t ui32SysClock;
 
-//*****************************************************************************
-//
-// Motor corresponding timers.
-//
-//*****************************************************************************
-#define	LEFT_B(x)					TimerMatchSet(TIMER1_BASE, TIMER_A, x);
-#define	LEFT_F(x)					TimerMatchSet(TIMER1_BASE, TIMER_B, x);
-#define	RIGHT_B(x)					TimerMatchSet(TIMER2_BASE, TIMER_A, x);
-#define	RIGHT_F(x)					TimerMatchSet(TIMER2_BASE, TIMER_B, x);
-
-#define MOTOR_SPEED_ZERO			SYS_CLOCK/SWITCHING_FREQ
-
-
 
 //*****************************************************************************
 //
@@ -58,6 +45,21 @@ extern uint32_t ui32SysClock;
 #define	LEFT_UPPER_BASE_PWM		PWM_OUT_4
 #define LEFT_WRIST_PWM			PWM_OUT_2
 #define LEFT_HAND_PWM			PWM_OUT_7
+
+uint32_t left_arm_servos[4] = {LEFT_BASE_PWM,
+							   LEFT_UPPER_BASE_PWM,
+							   LEFT_WRIST_PWM,
+							   LEFT_HAND_PWM};
+uint32_t right_arm_servos[4] = {RIGHT_BASE_PWM,
+							    RIGHT_UPPER_BASE_PWM,
+							    RIGHT_WRIST_PWM,
+							    RIGHT_HAND_PWM};
+
+uint32_t left_arm_position[4] = {PWM6LOAD, PWM4LOAD, PWM2LOAD, PWM7LOAD};
+uint32_t right_arm_position[4] = {PWM0LOAD, PWM5LOAD, PWM1LOAD, PWM3LOAD};
+
+PWM0LOAD
+
 //*****************************************************************************
 //
 // Initialises the PWM peripheral.
@@ -170,86 +172,20 @@ void initPWM(void)
 							  | PWM_OUT_6_BIT
 							  | PWM_OUT_7_BIT, true);
 
-	//
-	// Initialise the GPIOs and Timers that drive the PWM outputs.
-	//
-
-	/**************************************************************************
-	 *
-	 * PWM Control
-	 * Period: 500 Hz <=> 2 ms
-	 * Pulse width range: 0 ms - 2 ms
-	 *
-	 *************************************************************************/
-
-	//
-	// The Timer1 and Timer2 peripheral must be enabled.
-	//
-	SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER1);
-	SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER2);
-
-	//
-	// GPIO port A needs to be enabled so their pins can be used.
-	//
-	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
-
-	//
-	// Configure the GPIO pin muxing for the Timer/CCP function.
-	// This is only necessary if your part supports GPIO pin function muxing.
-	// Study the data sheet to see which functions are allocated per pin.
-	//
-	GPIOPinConfigure(GPIO_PA2_T1CCP0);
-	GPIOPinConfigure(GPIO_PA3_T1CCP1);
-	GPIOPinConfigure(GPIO_PA4_T2CCP0);
-	GPIOPinConfigure(GPIO_PA5_T2CCP1);
-
-	//
-	// Configure the ccp settings for CCP pin. This function also gives
-	// control of these pins to the timer hardware. Consult the data sheet to
-	// see which functions are allocated per pin.
-	//
-	GPIOPinTypeTimer(GPIO_PORTA_BASE, GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5);
-
-	//
-	// Configure Timer as a 32-bit periodic timer.
-	//
-	TimerConfigure(TIMER1_BASE, TIMER_CFG_SPLIT_PAIR |
-				   TIMER_CFG_A_PWM | TIMER_CFG_B_PWM);
-	TimerConfigure(TIMER2_BASE, TIMER_CFG_SPLIT_PAIR |
-				   TIMER_CFG_A_PWM | TIMER_CFG_B_PWM);
-
-	//
-	// Set the Timers load value to 100000 (for 500 Hz period). From the
-	// load value (i.e. 100000) down to match value (set below) the signal
-	// will be high.  From the match value to 0 the timer will be low.
-	//
-	TimerLoadSet(TIMER1_BASE, TIMER_A, (SYS_CLOCK/SWITCHING_FREQ));
-	TimerLoadSet(TIMER1_BASE, TIMER_B, (SYS_CLOCK/SWITCHING_FREQ));
-	TimerLoadSet(TIMER2_BASE, TIMER_A, (SYS_CLOCK/SWITCHING_FREQ));
-	TimerLoadSet(TIMER2_BASE, TIMER_B, (SYS_CLOCK/SWITCHING_FREQ));
-
-	//
-	// Set the WTimers match value to maximum (pulse width = 0).
-	//
-//	TimerMatchSet(TIMER0_BASE, TIMER_A, ((SYS_CLOCK/SWITCHING_FREQ)-1));
-//	TimerMatchSet(TIMER0_BASE, TIMER_B, ((SYS_CLOCK/SWITCHING_FREQ)-1));
-//	TimerMatchSet(TIMER4_BASE, TIMER_A, ((SYS_CLOCK/SWITCHING_FREQ)-1));
-//	TimerMatchSet(TIMER4_BASE, TIMER_B, ((SYS_CLOCK/SWITCHING_FREQ)-1));
-	TimerMatchSet(TIMER1_BASE, TIMER_A, MOTOR_SPEED_ZERO);
-	TimerMatchSet(TIMER1_BASE, TIMER_B, MOTOR_SPEED_ZERO);
-	TimerMatchSet(TIMER2_BASE, TIMER_A, MOTOR_SPEED_ZERO);
-	TimerMatchSet(TIMER2_BASE, TIMER_B, MOTOR_SPEED_ZERO);
-
-	//
-	// Enable Timers.
-	//
-	TimerEnable(TIMER1_BASE, TIMER_A | TIMER_B);
-	TimerEnable(TIMER2_BASE, TIMER_A | TIMER_B);
-
-	LEFT_B(1000);
-	//LEFT_F(5000);
-	RIGHT_B(2000);
-	//RIGHT_F(4000);
-
 	return;
+}
+
+
+void setServoPosition(uint32_t servo, uint32_t position)
+{
+	PWMPulseWidthSet(PWM0_BASE, servo, position);
+	return;
+}
+
+uint32_t getServoPosition(uint32_t servo, bool left)
+{
+	if(left)
+		return left_arm_position[servo];
+	else
+		return right_arm_position[servo];
 }
