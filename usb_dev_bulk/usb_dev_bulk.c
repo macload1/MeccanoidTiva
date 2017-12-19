@@ -116,6 +116,23 @@ volatile uint32_t g_ui32RxCount = 0;
 
 volatile uint32_t g_ui32Flags = 0;
 
+
+//*****************************************************************************
+//
+// USB message types
+//
+//*****************************************************************************
+#define	DC_DIRECT_CMD			0x00
+#define	DC_MVMT_CMD				0x01
+#define	DC_START_MVMT_CMD		0x02
+#define	DC_CHARGE_MVMT_CMD		0x03
+#define	DC_GET_POSITION_CMD		0x04
+#define	SERVO_DIRECT_CMD		0x10
+#define	SERVO_MVMT_CMD			0x11
+#define	SERVO_START_MVMT_CMD	0x12
+#define	SERVO_CHARGE_MVMT_CMD	0x13
+#define	SERVO_GET_POSITION_CMD	0x14
+
 //*****************************************************************************
 //
 // Global flag indicating that a USB configuration has been set.
@@ -376,6 +393,9 @@ RxHandler(void *pvCBData, uint32_t ui32Event, uint32_t ui32MsgValue,
         //
         case USB_EVENT_RX_AVAILABLE:
         {
+        	int i;
+			int servo;
+			int position = 0;
             tUSBDBulkDevice *psDevice;
             uint_fast32_t ui32ReadIndex;
             //
@@ -393,41 +413,79 @@ RxHandler(void *pvCBData, uint32_t ui32Event, uint32_t ui32MsgValue,
 			//
 			ui32ReadIndex = (uint32_t)((uint8_t *)pvMsgData - g_pui8USBRxBuffer);
 
-			int i;
-			int servo;
-			int position = 0;
-			if(g_pui8USBRxBuffer[ui32ReadIndex] == 0x00)
-				servo = PWM_OUT_0;
-			else if(g_pui8USBRxBuffer[ui32ReadIndex] == 0x01)
-				servo = PWM_OUT_1;
-			else if(g_pui8USBRxBuffer[ui32ReadIndex] == 0x02)
-				servo = PWM_OUT_2;
-			else if(g_pui8USBRxBuffer[ui32ReadIndex] == 0x03)
-				servo = PWM_OUT_3;
-			else if(g_pui8USBRxBuffer[ui32ReadIndex] == 0x04)
-				servo = PWM_OUT_4;
-			else if(g_pui8USBRxBuffer[ui32ReadIndex] == 0x05)
-				servo = PWM_OUT_5;
-			else if(g_pui8USBRxBuffer[ui32ReadIndex] == 0x06)
-				servo = PWM_OUT_6;
-			else if(g_pui8USBRxBuffer[ui32ReadIndex] == 0x07)
-				servo = PWM_OUT_7;
-			for(i = 1; i <= ui32MsgValue; i++)
-			{
-				position <<= 8;
-				position += g_pui8USBRxBuffer[ui32ReadIndex];
+            //
+            // Check the message type
+            //
+            switch(g_pui8USBRxBuffer[ui32ReadIndex])
+            {
+            case DC_DIRECT_CMD:
+
+            	break;
+            case DC_MVMT_CMD:
+
+            	break;
+            case DC_START_MVMT_CMD:
+
+            	break;
+            case DC_CHARGE_MVMT_CMD:
+
+            	break;
+            case DC_GET_POSITION_CMD:
+
+            	break;
+            case SERVO_DIRECT_CMD:
 				ui32ReadIndex++;
+				if(g_pui8USBRxBuffer[ui32ReadIndex] == 0x00)
+					servo = PWM_OUT_0;
+				else if(g_pui8USBRxBuffer[ui32ReadIndex] == 0x01)
+					servo = PWM_OUT_1;
+				else if(g_pui8USBRxBuffer[ui32ReadIndex] == 0x02)
+					servo = PWM_OUT_2;
+				else if(g_pui8USBRxBuffer[ui32ReadIndex] == 0x03)
+					servo = PWM_OUT_3;
+				else if(g_pui8USBRxBuffer[ui32ReadIndex] == 0x04)
+					servo = PWM_OUT_4;
+				else if(g_pui8USBRxBuffer[ui32ReadIndex] == 0x05)
+					servo = PWM_OUT_5;
+				else if(g_pui8USBRxBuffer[ui32ReadIndex] == 0x06)
+					servo = PWM_OUT_6;
+				else if(g_pui8USBRxBuffer[ui32ReadIndex] == 0x07)
+					servo = PWM_OUT_7;
+				ui32ReadIndex++;
+				for(i = 1; i <= ui32MsgValue; i++)
+				{
+					position <<= 8;
+					position += g_pui8USBRxBuffer[ui32ReadIndex];
+					ui32ReadIndex++;
 
-				ui32ReadIndex = ((ui32ReadIndex == BULK_BUFFER_SIZE) ?
-								 0 : ui32ReadIndex);
-			}
+					ui32ReadIndex = ((ui32ReadIndex == BULK_BUFFER_SIZE) ?
+									 0 : ui32ReadIndex);
+				}
 
-            PWMPulseWidthSet(PWM0_BASE, servo, position);
+				PWMPulseWidthSet(PWM0_BASE, servo, position);
+				// Return number of bytes received
+				return 6;
+            case SERVO_MVMT_CMD:
 
-            //
-            // Read the new packet and echo it back to the host.
-            //
-            //return(EchoNewDataToHost(psDevice, pvMsgData, ui32MsgValue));
+            	break;
+            case SERVO_START_MVMT_CMD:
+
+            	break;
+            case SERVO_CHARGE_MVMT_CMD:
+
+            	break;
+            case SERVO_GET_POSITION_CMD:
+                //
+                // Read the new packet and echo it back to the host.
+                //
+                //return(EchoNewDataToHost(psDevice, pvMsgData, ui32MsgValue));
+            	break;
+            default:
+            	break;
+            }
+
+
+
             return 5;
         }
 

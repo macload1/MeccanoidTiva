@@ -55,10 +55,6 @@ uint32_t right_arm_servos[4] = {RIGHT_BASE_PWM,
 							    RIGHT_WRIST_PWM,
 							    RIGHT_HAND_PWM};
 
-uint32_t left_arm_position[4] = {PWM6LOAD, PWM4LOAD, PWM2LOAD, PWM7LOAD};
-uint32_t right_arm_position[4] = {PWM0LOAD, PWM5LOAD, PWM1LOAD, PWM3LOAD};
-
-PWM0LOAD
 
 //*****************************************************************************
 //
@@ -185,7 +181,7 @@ void setServoPosition(uint32_t servo, uint32_t position)
 uint32_t getServoPosition(uint32_t servo, bool left)
 {
 	if(left)
-		return left_arm_position[servo];
+		return PWMPulseWidthGet(PWM0_BASE, left_arm_servos[servo]);
 	else
-		return right_arm_position[servo];
+		return PWMPulseWidthGet(PWM0_BASE, right_arm_servos[servo]);
 }

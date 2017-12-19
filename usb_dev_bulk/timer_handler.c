@@ -23,6 +23,14 @@
 //*****************************************************************************
 extern uint32_t ui32SysClock;
 
+//*****************************************************************************
+//
+// Linked list for servo motor movement.
+//
+//*****************************************************************************
+extern struct list_s left_arm_list[4];		// list contains the different actions
+extern struct list_s right_arm_list[4];	// list contains the different actions
+
 uint32_t milli_second = 0;
 
 //*****************************************************************************
@@ -49,28 +57,28 @@ Timer0AIntHandler(void)
     //
     for(i = 0; i < 4; i++)
     {
-    	if(!listIsEmpty(left_arm_list[i]))
+    	if(!listIsEmpty(&left_arm_list[i]))
     	{
     		uint32_t ms;
     		uint32_t pos;
     		ms = left_arm_list[i].h_p->ms_time_stamp - milli_second;
     		pos = getServoPosition(i, true) + (left_arm_list[i].h_p->position - getServoPosition(i, true))/ms;
-    		setServo(left_arm_servos[i], pos);
+    		setServoPosition(left_arm_servos[i], pos);
     		if(left_arm_list[i].h_p->ms_time_stamp == milli_second)
     		{
-    			listDelete(left_arm_list[i], true);
+    			listDelete(&left_arm_list[i], true);
     		}
     	}
-    	if(!listIsEmpty(right_arm_list[i]))
+    	if(!listIsEmpty(&right_arm_list[i]))
     	{
     		uint32_t ms;
     		uint32_t pos;
     		ms = right_arm_list[i].h_p->ms_time_stamp - milli_second;
     		pos = getServoPosition(i, false) + (right_arm_list[i].h_p->position - getServoPosition(i, false))/ms;
-    		setServo(right_arm_servos[i], pos);
+    		setServoPosition(right_arm_servos[i], pos);
     		if(right_arm_list[i].h_p->ms_time_stamp == milli_second)
     		{
-    			listDelete(right_arm_list[i], true);
+    			listDelete(&right_arm_list[i], true);
     		}
     	}
     }
