@@ -8,7 +8,22 @@
 #ifndef DC_MOTOR_H_
 #define DC_MOTOR_H_
 
+#include <stdbool.h>
+#include <stdint.h>
+#include "inc/hw_memmap.h"
+#include "inc/hw_timer.h"
+#include "driverlib/sysctl.h"
+#include "driverlib/pin_map.h"
+#include "driverlib/gpio.h"
+#include "driverlib/timer.h"
 
+//*****************************************************************************
+//
+// Switching frequency.
+//
+//*****************************************************************************
+#define	SWITCHING_FREQ			(unsigned long) 1900		// in Hz (1832 minimum)
+#define SYS_CLOCK				(unsigned long) 120000000	// in Hz
 
 
 #define MOTOR_SPEED_ZERO			SYS_CLOCK/SWITCHING_FREQ-1

@@ -16,13 +16,6 @@
 #include "dc_motor.h"
 
 
-//*****************************************************************************
-//
-// Switching frequency.
-//
-//*****************************************************************************
-#define	SWITCHING_FREQ			(unsigned long) 1900		// in Hz (1832 minimum)
-#define SYS_CLOCK				(unsigned long) 120000000	// in Hz
 
 //*****************************************************************************
 //
@@ -106,10 +99,10 @@ void initDCMotor(void)
 	TimerEnable(TIMER1_BASE, TIMER_A | TIMER_B);
 	TimerEnable(TIMER2_BASE, TIMER_A | TIMER_B);
 
-	LEFT_B(MOTOR_SPEED_MAX/2);
-	LEFT_F(MOTOR_SPEED_ZERO);
-	RIGHT_B(MOTOR_SPEED_MAX/2);
-	RIGHT_F(MOTOR_SPEED_ZERO);
+//	LEFT_B(MOTOR_SPEED_MAX/2);
+//	LEFT_F(MOTOR_SPEED_ZERO);
+//	RIGHT_B(MOTOR_SPEED_MAX/2);
+//	RIGHT_F(MOTOR_SPEED_ZERO);
 
 	return;
 }

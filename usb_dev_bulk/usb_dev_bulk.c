@@ -394,8 +394,11 @@ RxHandler(void *pvCBData, uint32_t ui32Event, uint32_t ui32MsgValue,
         case USB_EVENT_RX_AVAILABLE:
         {
         	int i;
+        	int left_direction;
+        	int right_direction;
 			int servo;
 			int position = 0;
+			int speed;
             tUSBDBulkDevice *psDevice;
             uint_fast32_t ui32ReadIndex;
             //
@@ -419,7 +422,92 @@ RxHandler(void *pvCBData, uint32_t ui32Event, uint32_t ui32MsgValue,
             switch(g_pui8USBRxBuffer[ui32ReadIndex])
             {
             case DC_DIRECT_CMD:
-
+				ui32ReadIndex++;
+				ui32ReadIndex = ((ui32ReadIndex == BULK_BUFFER_SIZE) ?
+								 0 : ui32ReadIndex);
+				right_direction = g_pui8USBRxBuffer[ui32ReadIndex];
+				// Right DC Motor
+				if(g_pui8USBRxBuffer[ui32ReadIndex] == 0x01)
+				{
+					ui32ReadIndex++;
+					ui32ReadIndex = ((ui32ReadIndex == BULK_BUFFER_SIZE) ?
+									 0 : ui32ReadIndex);
+					// Move forward
+					RIGHT_B(MOTOR_SPEED_ZERO);
+					speed = 0;
+					for(i = 1; i <= 4; i++)
+					{
+						speed <<= 8;
+						speed += g_pui8USBRxBuffer[ui32ReadIndex];
+						ui32ReadIndex++;
+						ui32ReadIndex = ((ui32ReadIndex == BULK_BUFFER_SIZE) ?
+										 0 : ui32ReadIndex);
+					}
+					RIGHT_F(speed);
+				}
+				else if(g_pui8USBRxBuffer[ui32ReadIndex] == 0x02)
+				{
+					ui32ReadIndex++;
+					ui32ReadIndex = ((ui32ReadIndex == BULK_BUFFER_SIZE) ?
+									 0 : ui32ReadIndex);
+					// Move backward
+					RIGHT_F(MOTOR_SPEED_ZERO);
+					speed = 0;
+					for(i = 1; i <= 4; i++)
+					{
+						speed <<= 8;
+						speed += g_pui8USBRxBuffer[ui32ReadIndex];
+						ui32ReadIndex++;
+						ui32ReadIndex = ((ui32ReadIndex == BULK_BUFFER_SIZE) ?
+										 0 : ui32ReadIndex);
+					}
+					RIGHT_B(speed);
+				}
+//				UARTprintf("Right: fw -> %d  speed -> %d \r\n",
+//										right_direction,
+//										speed);
+				// Left DC Motor
+				left_direction = g_pui8USBRxBuffer[ui32ReadIndex];
+				if(g_pui8USBRxBuffer[ui32ReadIndex] == 0x01)
+				{
+					ui32ReadIndex++;
+					ui32ReadIndex = ((ui32ReadIndex == BULK_BUFFER_SIZE) ?
+									 0 : ui32ReadIndex);
+					// Move forward
+					LEFT_B(MOTOR_SPEED_ZERO);
+					speed = 0;
+					for(i = 6; i <= 9; i++)
+					{
+						speed <<= 8;
+						speed += g_pui8USBRxBuffer[ui32ReadIndex];
+						ui32ReadIndex++;
+						ui32ReadIndex = ((ui32ReadIndex == BULK_BUFFER_SIZE) ?
+										 0 : ui32ReadIndex);
+					}
+					LEFT_F(speed);
+				}
+				else if(g_pui8USBRxBuffer[ui32ReadIndex] == 0x02)
+				{
+					ui32ReadIndex++;
+					ui32ReadIndex = ((ui32ReadIndex == BULK_BUFFER_SIZE) ?
+									 0 : ui32ReadIndex);
+					// Move backward
+					LEFT_F(MOTOR_SPEED_ZERO);
+					speed = 0;
+					for(i = 6; i <= 9; i++)
+					{
+						speed <<= 8;
+						speed += g_pui8USBRxBuffer[ui32ReadIndex];
+						ui32ReadIndex++;
+						ui32ReadIndex = ((ui32ReadIndex == BULK_BUFFER_SIZE) ?
+										 0 : ui32ReadIndex);
+					}
+					LEFT_B(speed);
+				}
+//				UARTprintf("Left: fw -> %d  speed -> %d \r\n",
+//						left_direction,
+//						speed);
+				return 11;
             	break;
             case DC_MVMT_CMD:
 
@@ -435,6 +523,8 @@ RxHandler(void *pvCBData, uint32_t ui32Event, uint32_t ui32MsgValue,
             	break;
             case SERVO_DIRECT_CMD:
 				ui32ReadIndex++;
+				ui32ReadIndex = ((ui32ReadIndex == BULK_BUFFER_SIZE) ?
+								 0 : ui32ReadIndex);
 				if(g_pui8USBRxBuffer[ui32ReadIndex] == 0x00)
 					servo = PWM_OUT_0;
 				else if(g_pui8USBRxBuffer[ui32ReadIndex] == 0x01)
@@ -452,6 +542,8 @@ RxHandler(void *pvCBData, uint32_t ui32Event, uint32_t ui32MsgValue,
 				else if(g_pui8USBRxBuffer[ui32ReadIndex] == 0x07)
 					servo = PWM_OUT_7;
 				ui32ReadIndex++;
+				ui32ReadIndex = ((ui32ReadIndex == BULK_BUFFER_SIZE) ?
+								 0 : ui32ReadIndex);
 				for(i = 1; i <= ui32MsgValue; i++)
 				{
 					position <<= 8;
