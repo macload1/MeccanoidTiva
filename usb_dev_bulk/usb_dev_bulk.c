@@ -42,10 +42,12 @@
 #include "usb_bulk_structs.h"
 
 #include "linked_list_dbl.h"
+#include "delay.h"
 
 #include "timer_handler.h"
 #include "servo.h"
 #include "dc_motor.h"
+#include "Meccano.h"
 //*****************************************************************************
 //
 //! \addtogroup example_list
@@ -132,6 +134,10 @@ volatile uint32_t g_ui32Flags = 0;
 #define	SERVO_START_MVMT_CMD	0x12
 #define	SERVO_CHARGE_MVMT_CMD	0x13
 #define	SERVO_GET_POSITION_CMD	0x14
+#define	MECCANO_SERVO_POS_CMD	0x20
+#define	MECCANO_SERVO_LED_CMD	0x21
+#define	MECCANO_LED_CMD			0x22
+
 
 //*****************************************************************************
 //
@@ -398,6 +404,8 @@ RxHandler(void *pvCBData, uint32_t ui32Event, uint32_t ui32MsgValue,
         	int right_direction;
 			int servo;
 			int position = 0;
+			int colour;
+			int red, green, blue, time;
 			int speed;
             tUSBDBulkDevice *psDevice;
             uint_fast32_t ui32ReadIndex;
@@ -572,6 +580,63 @@ RxHandler(void *pvCBData, uint32_t ui32Event, uint32_t ui32MsgValue,
                 //
                 //return(EchoNewDataToHost(psDevice, pvMsgData, ui32MsgValue));
             	break;
+            case MECCANO_SERVO_POS_CMD:
+				ui32ReadIndex++;
+				ui32ReadIndex = ((ui32ReadIndex == BULK_BUFFER_SIZE) ?
+								 0 : ui32ReadIndex);
+				servo = g_pui8USBRxBuffer[ui32ReadIndex];
+				ui32ReadIndex++;
+				ui32ReadIndex = ((ui32ReadIndex == BULK_BUFFER_SIZE) ?
+								 0 : ui32ReadIndex);
+				position = g_pui8USBRxBuffer[ui32ReadIndex];
+				ui32ReadIndex++;
+				ui32ReadIndex = ((ui32ReadIndex == BULK_BUFFER_SIZE) ?
+								 0 : ui32ReadIndex);
+
+				setMeccanoServoPosition(servo, position);
+				// Return number of bytes received
+				return 3;
+            case MECCANO_SERVO_LED_CMD:
+				ui32ReadIndex++;
+				ui32ReadIndex = ((ui32ReadIndex == BULK_BUFFER_SIZE) ?
+								 0 : ui32ReadIndex);
+				servo = g_pui8USBRxBuffer[ui32ReadIndex];
+				ui32ReadIndex++;
+				ui32ReadIndex = ((ui32ReadIndex == BULK_BUFFER_SIZE) ?
+								 0 : ui32ReadIndex);
+				colour = g_pui8USBRxBuffer[ui32ReadIndex];
+				ui32ReadIndex++;
+				ui32ReadIndex = ((ui32ReadIndex == BULK_BUFFER_SIZE) ?
+								 0 : ui32ReadIndex);
+
+				setMeccanoServoColor(servo, colour);
+				// Return number of bytes received
+				return 3;
+            case MECCANO_LED_CMD:
+				ui32ReadIndex++;
+				ui32ReadIndex = ((ui32ReadIndex == BULK_BUFFER_SIZE) ?
+								 0 : ui32ReadIndex);
+				red = g_pui8USBRxBuffer[ui32ReadIndex];
+				ui32ReadIndex++;
+				ui32ReadIndex = ((ui32ReadIndex == BULK_BUFFER_SIZE) ?
+								 0 : ui32ReadIndex);
+				green = g_pui8USBRxBuffer[ui32ReadIndex];
+				ui32ReadIndex++;
+				ui32ReadIndex = ((ui32ReadIndex == BULK_BUFFER_SIZE) ?
+								 0 : ui32ReadIndex);
+				blue = g_pui8USBRxBuffer[ui32ReadIndex];
+				ui32ReadIndex++;
+				ui32ReadIndex = ((ui32ReadIndex == BULK_BUFFER_SIZE) ?
+								 0 : ui32ReadIndex);
+				time = g_pui8USBRxBuffer[ui32ReadIndex];
+				ui32ReadIndex++;
+				ui32ReadIndex = ((ui32ReadIndex == BULK_BUFFER_SIZE) ?
+								 0 : ui32ReadIndex);
+
+				setMeccanoLEDColor(red, green, blue, time);
+				// Return number of bytes received
+				return 5;
+
             default:
             	break;
             }
@@ -709,6 +774,11 @@ main(void)
     timerInit();
 
     //
+    // Initialise delay functions
+    //
+    delay_init();
+
+    //
     // Initialise Servo Control
     //
     initPWM();
@@ -717,6 +787,11 @@ main(void)
     // Initialise DC Motor Control
     //
     initDCMotor();
+
+    //
+    // Initialise the Meccano Servos and LEDs
+    //
+    MeccanoInit();
 
     //
     // Main application loop.
