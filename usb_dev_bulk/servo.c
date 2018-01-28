@@ -15,6 +15,7 @@
 #include "driverlib/timer.h"
 
 #include "servo.h"
+#include "linked_list_dbl.h"
 
 //*****************************************************************************
 //
@@ -31,6 +32,9 @@
 //*****************************************************************************
 extern uint32_t ui32SysClock;
 
+
+extern struct list_s left_arm_list[4];		// list contains the different actions
+extern struct list_s right_arm_list[4];		// list contains the different actions
 
 //*****************************************************************************
 //
@@ -54,6 +58,27 @@ uint32_t right_arm_servos[4] = {RIGHT_BASE_PWM,
 							    RIGHT_UPPER_BASE_PWM,
 							    RIGHT_WRIST_PWM,
 							    RIGHT_HAND_PWM};
+
+struct list_s* servo_list[8] = {&right_arm_list[0],
+								&right_arm_list[2],
+								&left_arm_list[2],
+								&right_arm_list[3],
+								&left_arm_list[1],
+								&right_arm_list[1],
+								&left_arm_list[0],
+								&left_arm_list[3]};
+
+//*****************************************************************************
+//
+// Servo movement variables.
+//
+//*****************************************************************************
+bool left_is_moving = false;
+bool right_is_moving = false;
+
+uint32_t left_mvmt_start_time;
+uint32_t right_mvmt_start_time;
+
 
 
 //*****************************************************************************

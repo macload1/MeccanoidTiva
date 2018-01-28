@@ -29,7 +29,7 @@ extern uint32_t ui32SysClock;
 //
 //*****************************************************************************
 extern struct list_s left_arm_list[4];		// list contains the different actions
-extern struct list_s right_arm_list[4];	// list contains the different actions
+extern struct list_s right_arm_list[4];		// list contains the different actions
 
 uint32_t milli_second = 0;
 
@@ -52,36 +52,56 @@ Timer0AIntHandler(void)
     //
     milli_second++;
 
+	bool left_empty = true;
+	bool right_empty = true;
     //
     // Check servo lists for pending actions.
     //
     for(i = 0; i < 4; i++)
     {
-    	if(!listIsEmpty(&left_arm_list[i]))
+    	if(left_is_moving)
     	{
-    		uint32_t ms;
-    		uint32_t pos;
-    		ms = left_arm_list[i].h_p->ms_time_stamp - milli_second;
-    		pos = getServoPosition(i, true) + (left_arm_list[i].h_p->position - getServoPosition(i, true))/ms;
-    		setServoPosition(left_arm_servos[i], pos);
-    		if(left_arm_list[i].h_p->ms_time_stamp == milli_second)
-    		{
-    			listDelete(&left_arm_list[i], true);
-    		}
+			if(!listIsEmpty(&left_arm_list[i]))
+			{
+				left_empty = false;
+				if((left_mvmt_start_time + left_arm_list[i].h_p->ms_time_start) <= milli_second)
+				{
+					uint32_t ms;
+					uint32_t pos;
+					ms = left_mvmt_start_time + left_arm_list[i].h_p->ms_time_stop - milli_second;
+					pos = getServoPosition(i, true) + (left_arm_list[i].h_p->position - getServoPosition(i, true))/ms;
+					setServoPosition(left_arm_servos[i], pos);
+					if((left_mvmt_start_time + left_arm_list[i].h_p->ms_time_stop) <= milli_second)
+					{
+						listDelete(&left_arm_list[i], true);
+					}
+				}
+			}
     	}
-    	if(!listIsEmpty(&right_arm_list[i]))
+    	if(right_is_moving)
     	{
-    		uint32_t ms;
-    		uint32_t pos;
-    		ms = right_arm_list[i].h_p->ms_time_stamp - milli_second;
-    		pos = getServoPosition(i, false) + (right_arm_list[i].h_p->position - getServoPosition(i, false))/ms;
-    		setServoPosition(right_arm_servos[i], pos);
-    		if(right_arm_list[i].h_p->ms_time_stamp == milli_second)
-    		{
-    			listDelete(&right_arm_list[i], true);
-    		}
+			if(!listIsEmpty(&right_arm_list[i]))
+			{
+				right_empty = false;
+				if((right_mvmt_start_time + right_arm_list[i].h_p->ms_time_start) <= milli_second)
+				{
+					uint32_t ms;
+					uint32_t pos;
+					ms = right_mvmt_start_time + right_arm_list[i].h_p->ms_time_stop - milli_second;
+					pos = getServoPosition(i, false) + (right_arm_list[i].h_p->position - getServoPosition(i, false))/ms;
+					setServoPosition(right_arm_servos[i], pos);
+					if((right_mvmt_start_time + right_arm_list[i].h_p->ms_time_stop) <= milli_second)
+					{
+						listDelete(&right_arm_list[i], true);
+					}
+				}
+			}
     	}
     }
+    if(left_empty)
+    	left_is_moving = false;
+    if(right_empty)
+    	right_is_moving = false;
 }
 
 

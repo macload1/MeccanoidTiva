@@ -407,6 +407,7 @@ RxHandler(void *pvCBData, uint32_t ui32Event, uint32_t ui32MsgValue,
 			int colour;
 			int red, green, blue, time;
 			int speed;
+			int return_nbr;
             tUSBDBulkDevice *psDevice;
             uint_fast32_t ui32ReadIndex;
             //
@@ -516,7 +517,6 @@ RxHandler(void *pvCBData, uint32_t ui32Event, uint32_t ui32MsgValue,
 //						left_direction,
 //						speed);
 				return 11;
-            	break;
             case DC_MVMT_CMD:
 
             	break;
@@ -569,11 +569,76 @@ RxHandler(void *pvCBData, uint32_t ui32Event, uint32_t ui32MsgValue,
 
             	break;
             case SERVO_START_MVMT_CMD:
-
-            	break;
+				ui32ReadIndex++;
+				ui32ReadIndex = ((ui32ReadIndex == BULK_BUFFER_SIZE) ?
+								 0 : ui32ReadIndex);
+				uint8_t arm = g_pui8USBRxBuffer[ui32ReadIndex];
+				ui32ReadIndex++;
+				ui32ReadIndex = ((ui32ReadIndex == BULK_BUFFER_SIZE) ?
+								 0 : ui32ReadIndex);
+				// Start left arm movement
+				if((arm & 0x01) == 0x01)
+				{
+					left_mvmt_start_time = milli_second;
+					left_is_moving = true;
+				}
+				// Start right arm movement
+				if((arm & 0x02) == 0x02)
+				{
+					right_mvmt_start_time = milli_second;
+					right_is_moving = true;
+				}
+            	return 2;
             case SERVO_CHARGE_MVMT_CMD:
+            	return_nbr = 2;
+				ui32ReadIndex++;
+				ui32ReadIndex = ((ui32ReadIndex == BULK_BUFFER_SIZE) ?
+								 0 : ui32ReadIndex);
+				uint32_t packet_nbr = g_pui8USBRxBuffer[ui32ReadIndex];
+				ui32ReadIndex++;
+				ui32ReadIndex = ((ui32ReadIndex == BULK_BUFFER_SIZE) ?
+								 0 : ui32ReadIndex);
 
-            	break;
+				while(packet_nbr--)
+				{
+					uint32_t servo_nbr = g_pui8USBRxBuffer[ui32ReadIndex];
+					ui32ReadIndex++;
+					ui32ReadIndex = ((ui32ReadIndex == BULK_BUFFER_SIZE) ?
+									 0 : ui32ReadIndex);
+					uint32_t start_time = 0;
+					for(i = 1; i <= 4; i++)
+					{
+						start_time <<= 8;
+						start_time += g_pui8USBRxBuffer[ui32ReadIndex];
+						ui32ReadIndex++;
+						ui32ReadIndex = ((ui32ReadIndex == BULK_BUFFER_SIZE) ?
+										 0 : ui32ReadIndex);
+					}
+					uint32_t stop_time = 0;
+					for(i = 1; i <= 4; i++)
+					{
+						stop_time <<= 8;
+						stop_time += g_pui8USBRxBuffer[ui32ReadIndex];
+						ui32ReadIndex++;
+						ui32ReadIndex = ((ui32ReadIndex == BULK_BUFFER_SIZE) ?
+										 0 : ui32ReadIndex);
+					}
+					uint32_t stop_position = 0;
+					for(i = 1; i <= 4; i++)
+					{
+						stop_position <<= 8;
+						stop_position += g_pui8USBRxBuffer[ui32ReadIndex];
+						ui32ReadIndex++;
+						ui32ReadIndex = ((ui32ReadIndex == BULK_BUFFER_SIZE) ?
+										 0 : ui32ReadIndex);
+					}
+					Insert(servo_list[servo_nbr],
+							start_time,
+							stop_time,
+							stop_position);
+					return_nbr += 13;
+				}
+				return return_nbr;
             case SERVO_GET_POSITION_CMD:
                 //
                 // Read the new packet and echo it back to the host.

@@ -46,7 +46,8 @@ struct list_node_s* Allocate_node(void) {
     struct list_node_s* temp_p;
 
     temp_p = (struct list_node_s*) malloc(sizeof(struct list_node_s));
-    temp_p->ms_time_stamp = 0;
+    temp_p->ms_time_start = 0;
+    temp_p->ms_time_stop = 0;
     temp_p->position = 0;
     temp_p->prev_p = NULL;
     temp_p->next_p = NULL;
@@ -62,7 +63,8 @@ struct list_node_s* Allocate_node(void) {
  * In/out arg: list_p = pointer to struct storing head and tail ptrs
  */
 void Insert(struct list_s* list_p,
-            uint32_t ms_time_stamp,
+            uint32_t ms_time_start,
+            uint32_t ms_time_stop,
 			uint32_t position)
 {
     struct list_node_s* curr_p = list_p->h_p;
@@ -70,9 +72,9 @@ void Insert(struct list_s* list_p,
 
     while (curr_p != NULL)
     {
-        if (ms_time_stamp == curr_p->ms_time_stamp) {
+        if (ms_time_start == curr_p->ms_time_start) {
             break;
-        } else if (ms_time_stamp < curr_p->ms_time_stamp) {
+        } else if (ms_time_start < curr_p->ms_time_start) {
             break;  /* string alphabetically precedes node */
         } else {
             curr_p = curr_p->next_p;
@@ -84,7 +86,8 @@ void Insert(struct list_s* list_p,
 #  endif
 
    temp_p = Allocate_node();
-   temp_p->ms_time_stamp = ms_time_stamp;
+   temp_p->ms_time_start = ms_time_start;
+   temp_p->ms_time_stop = ms_time_stop;
    temp_p->position = position;
 
    if ( list_p->h_p == NULL ) {
@@ -124,8 +127,9 @@ void Print(struct list_s* list_p) {
     {
         while (curr_p != NULL)
         {
-            printf("timestamp: %d - position: %d",
-                    curr_p->ms_time_stamp,
+            printf("timestart: %d - timestop: %d - position: %d",
+                    curr_p->ms_time_start,
+                    curr_p->ms_time_stop,
                     curr_p->position);
             if(curr_p->next_p == NULL)
                 printf("}");
@@ -145,14 +149,14 @@ void Print(struct list_s* list_p) {
  *             list_p = pointers to first and last nodes in list
  * Return val: 1, if string is in the list, 0 otherwise
  */
-int Member(struct list_s* list_p, uint32_t ms_time_stamp) {
+int Member(struct list_s* list_p, uint32_t ms_time_start) {
    struct list_node_s* curr_p;
 
    curr_p = list_p->h_p;
    while (curr_p != NULL)
-      if (ms_time_stamp = curr_p->ms_time_stamp)
+      if (ms_time_start = curr_p->ms_time_start)
          return 1;
-      else if (ms_time_stamp < curr_p->ms_time_stamp)
+      else if (ms_time_start < curr_p->ms_time_start)
          return 0;
       else
          curr_p = curr_p->next_p;
@@ -240,8 +244,9 @@ void Free_list(struct list_s* list_p) {
 void Print_node(struct list_node_s* node_p) {
     if (node_p != NULL)
     {
-        printf("timestamp: %d - position: %d",
-                node_p->ms_time_stamp,
+        printf("timestart: %d - timestop: %d - position: %d",
+                node_p->ms_time_start,
+                node_p->ms_time_stop,
                 node_p->position);
     }
     else

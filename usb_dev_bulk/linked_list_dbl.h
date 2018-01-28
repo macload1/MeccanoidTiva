@@ -13,7 +13,8 @@ extern "C" {
 #endif
 
 struct list_node_s {
-   uint32_t ms_time_stamp;
+   uint32_t ms_time_start;
+   uint32_t ms_time_stop;
    uint32_t position;
    struct list_node_s* prev_p;
    struct list_node_s* next_p;
@@ -27,7 +28,8 @@ struct list_s {
 
 struct list_node_s* Allocate_node(void);
 void Insert(struct list_s* list_p,
-            uint32_t ms_time_stamp,
+            uint32_t ms_time_start,
+            uint32_t ms_time_stop,
 			uint32_t position);
 void Print(struct list_s* list_p);
 int Member(struct list_s* list_p, uint32_t ms_time_stamp);

@@ -21,6 +21,14 @@
 extern uint32_t left_arm_servos[];
 extern uint32_t right_arm_servos[];
 
+extern bool left_is_moving;
+extern bool right_is_moving;
+
+extern uint32_t left_mvmt_start_time;
+extern uint32_t right_mvmt_start_time;
+
+extern struct list_s* servo_list[];
+
 // Initialise PWM peripheral
 void initPWM(void);
 void setServoPosition(uint32_t servo, uint32_t position);

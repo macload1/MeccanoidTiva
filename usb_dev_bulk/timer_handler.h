@@ -11,7 +11,6 @@
 // millisecond tick since start-up
 extern uint32_t milli_second;
 
-
 void timerInit(void);
 
 
