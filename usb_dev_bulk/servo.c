@@ -68,6 +68,20 @@ struct list_s* servo_list[8] = {&right_arm_list[0],
 								&left_arm_list[0],
 								&left_arm_list[3]};
 
+uint32_t actual_pos[8];
+
+struct servo_notation servo_not[8] = {{0, false},
+									  {2, false},
+									  {2, true},
+									  {3, false},
+									  {1, true},
+									  {1, false},
+									  {0, true},
+									  {3, true}};
+
+uint8_t left_servo_not[4] = {6, 4, 2, 7};
+uint8_t right_servo_not[4] = {0, 5, 1, 3};
+
 //*****************************************************************************
 //
 // Servo movement variables.
@@ -210,3 +224,4 @@ uint32_t getServoPosition(uint32_t servo, bool left)
 	else
 		return PWMPulseWidthGet(PWM0_BASE, right_arm_servos[servo]);
 }
+

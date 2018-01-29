@@ -17,6 +17,10 @@
 #define	PWM_ARM7		PWM_OUT_1		// PF1
 #define	PWM_ARM8		PWM_OUT_0		// PF0
 
+struct servo_notation {
+   uint8_t nbr;
+   bool left;
+};
 
 extern uint32_t left_arm_servos[];
 extern uint32_t right_arm_servos[];
@@ -28,6 +32,13 @@ extern uint32_t left_mvmt_start_time;
 extern uint32_t right_mvmt_start_time;
 
 extern struct list_s* servo_list[];
+
+extern uint32_t actual_pos[];
+
+extern struct servo_notation servo_not[8];
+
+extern uint8_t left_servo_not[4];
+extern uint8_t right_servo_not[4];
 
 // Initialise PWM peripheral
 void initPWM(void);

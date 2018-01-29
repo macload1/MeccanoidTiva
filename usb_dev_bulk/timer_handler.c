@@ -67,10 +67,26 @@ Timer0AIntHandler(void)
 				if((left_mvmt_start_time + left_arm_list[i].h_p->ms_time_start) <= milli_second)
 				{
 					uint32_t ms;
+					uint32_t duration;
 					uint32_t pos;
+					uint32_t initial_position = actual_pos[left_servo_not[i]];
+					duration = left_arm_list[i].h_p->ms_time_stop - left_arm_list[i].h_p->ms_time_start;
 					ms = left_mvmt_start_time + left_arm_list[i].h_p->ms_time_stop - milli_second;
-					pos = getServoPosition(i, true) + (left_arm_list[i].h_p->position - getServoPosition(i, true))/ms;
-					setServoPosition(left_arm_servos[i], pos);
+					if(initial_position <= left_arm_list[i].h_p->position)
+					{
+						pos = initial_position + (left_arm_list[i].h_p->position - initial_position) * (duration - ms) / (duration);
+					}
+					else
+					{
+						pos = initial_position - (initial_position - left_arm_list[i].h_p->position) * (duration - ms) / (duration);
+					}
+					if(ms == 0)
+					{
+						setServoPosition(left_arm_servos[i], left_arm_list[i].h_p->position);
+						actual_pos[left_servo_not[i]] = left_arm_list[i].h_p->position;
+					}
+					else
+						setServoPosition(left_arm_servos[i], pos);
 					if((left_mvmt_start_time + left_arm_list[i].h_p->ms_time_stop) <= milli_second)
 					{
 						listDelete(&left_arm_list[i], true);
@@ -86,10 +102,26 @@ Timer0AIntHandler(void)
 				if((right_mvmt_start_time + right_arm_list[i].h_p->ms_time_start) <= milli_second)
 				{
 					uint32_t ms;
+					uint32_t duration;
 					uint32_t pos;
+					uint32_t initial_position = actual_pos[right_servo_not[i]];
+					duration = right_arm_list[i].h_p->ms_time_stop - right_arm_list[i].h_p->ms_time_start;
 					ms = right_mvmt_start_time + right_arm_list[i].h_p->ms_time_stop - milli_second;
-					pos = getServoPosition(i, false) + (right_arm_list[i].h_p->position - getServoPosition(i, false))/ms;
-					setServoPosition(right_arm_servos[i], pos);
+					if(initial_position <= right_arm_list[i].h_p->position)
+					{
+						pos = initial_position + (right_arm_list[i].h_p->position - initial_position) * (duration - ms) / (duration);
+					}
+					else
+					{
+						pos = initial_position - (initial_position - right_arm_list[i].h_p->position) * (duration - ms) / (duration);
+					}
+					if(ms == 0)
+					{
+						setServoPosition(right_arm_servos[i], right_arm_list[i].h_p->position);
+						actual_pos[right_servo_not[i]] = right_arm_list[i].h_p->position;
+					}
+					else
+						setServoPosition(right_arm_servos[i], pos);
 					if((right_mvmt_start_time + right_arm_list[i].h_p->ms_time_stop) <= milli_second)
 					{
 						listDelete(&right_arm_list[i], true);

@@ -569,6 +569,16 @@ RxHandler(void *pvCBData, uint32_t ui32Event, uint32_t ui32MsgValue,
 
             	break;
             case SERVO_START_MVMT_CMD:
+            	// Retrieve actual Servo position
+            	actual_pos[0] = getServoPosition(0, false);
+            	actual_pos[1] = getServoPosition(2, false);
+            	actual_pos[2] = getServoPosition(2, true);
+            	actual_pos[3] = getServoPosition(3, false);
+            	actual_pos[4] = getServoPosition(1, true);
+            	actual_pos[5] = getServoPosition(1, false);
+            	actual_pos[6] = getServoPosition(0, true);
+            	actual_pos[7] = getServoPosition(3, true);
+
 				ui32ReadIndex++;
 				ui32ReadIndex = ((ui32ReadIndex == BULK_BUFFER_SIZE) ?
 								 0 : ui32ReadIndex);
